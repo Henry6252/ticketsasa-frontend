@@ -1,0 +1,30 @@
+body { font-family: 'Inter', sans-serif; }
+.ticket-cutout-left, .ticket-cutout-right {
+    position: relative;
+}
+.ticket-cutout-left::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background-color: #F4F5F7;
+    border-radius: 50%;
+}
+.ticket-cutout-right::after {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background-color: #F4F5F7;
+    border-radius: 50%;
+}
+@media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+}

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketsasa | Events, Entertainment & Ticketing Engine</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js for Admin Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-sasaGray min-h-screen text-gray-800 flex flex-col">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-8">
+                    <button onclick="switchView('storefront')" class="flex items-center gap-2 text-2xl font-black text-sasaRed tracking-tight">
+                        <i class="fa-solid fa-ticket rotate-45 text-3xl"></i>
+                        <span>ticketsasa</span>
+                    </button>
+                    <!-- Main Navigation Links -->
+                    <nav class="hidden md:flex space-x-6 text-sm font-semibold text-gray-700">
+                        <button onclick="switchView('storefront')" class="hover:text-sasaRed transition">Events</button>
+                        <a href="#packages" onclick="filterCategory('Holiday')" class="hover:text-sasaRed transition">Holidays</a>
+                        <a href="#flights" onclick="alert('Flight search feature is operational in production integration mode.')" class="hover:text-sasaRed transition">Flights</a>
+                        <a href="#hotels" onclick="alert('Hotel booking module loaded.')" class="hover:text-sasaRed transition">Hotels</a>
+                    </nav>
+                </div>
+
+                <!-- Global Search & System Selector -->
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden sm:block w-64">
+                        <input type="text" id="globalSearch" oninput="handleSearch(this.value)" placeholder="Search events, concerts, venues..." 
+                            class="w-full pl-9 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-sasaRed focus:bg-white transition">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                    </div>
+
+                    <!-- Environment Mode Switcher Dropdown -->
+                    <div class="relative inline-block text-left">
+                        <div class="flex items-center gap-2 bg-sasaDark text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-sm cursor-pointer hover:bg-gray-800">
+                            <i class="fa-solid fa-bars-staggered"></i>
+                            <select id="viewSelector" onchange="switchView(this.value)" class="bg-transparent text-white font-medium focus:outline-none cursor-pointer">
+                                <option value="storefront" class="bg-sasaDark">🛒 Public Storefront</option>
+                                <option value="dashboard" class="bg-sasaDark">📊 Organizer Dashboard</option>
+                                <option value="scanner" class="bg-sasaDark">📱 Gate Scanner App</option>
+                                <option value="architecture" class="bg-sasaDark">⚡ Postgres & M-Pesa Setup</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WRAPPER CONTAINER -->
+    <main class="flex-grow">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: PUBLIC STOREFRONT                  -->
+        <!-- ========================================== -->
+        <section id="view-storefront" class="space-y-8 pb-16">
+            
+            <!-- Hero Carousel / Feature Section -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl bg-sasaDark h-[340px] md:h-[420px] flex items-end">
+                    <img id="heroImage" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80" 
+                        alt="Sol Fest Live Concert" class="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                    
+                    <div class="relative z-10 p-6 sm:p-10 text-white max-w-3xl">
+                        <span class="bg-sasaRed text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Featured Highlight</span>
+                        <h1 id="heroTitle" class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-none mb-3">Sol Fest Africa 2026</h1>
+                        <p id="heroSubtitle" class="text-gray-300 text-sm sm:text-base line-clamp-2 mb-4">Experience the ultimate music festival featuring East Africa's finest music icons live at Uhuru Gardens Nairobi.</p>
+                        <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-200">
+                            <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar-check text-sasaRed"></i> Dec 18, 2026</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-sasaRed"></i> Uhuru Gardens, Nairobi</span>
+                            <span class="flex items-center gap-1.5 font-bold text-white text-base"><i class="fa-solid fa-tag text-sasaRed"></i> KES 3,500</span>
+                        </div>
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="openBookingModal(1)" class="bg-sasaRed hover:bg-sasaRedHover text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg transition flex items-center gap-2">
+                                <i class="fa-solid fa-ticket"></i> Get Tickets Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Carousel Controls -->
+                    <div class="absolute bottom-6 right-6 z-20 flex gap-2">
+                        <button onclick="prevHero()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextHero()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Bar & Filters -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                    <!-- Categories -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                        <button onclick="filterCategory('All')" class="cat-btn active bg-sasaRed text-white px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition">All Events</button>
+                        <button onclick="filterCategory('Music')" class="cat-btn bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition">Concerts & Music</button>
+                        <button onclick="filterCategory('Nightlife')" class="cat-btn bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition">Nightlife & Clubs</button>
+                        <button onclick="filterCategory('Theatre')" class="cat-btn bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition">Arts & Theatre</button>
+                        <button onclick="filterCategory('Sports')" class="cat-btn bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition">Sports & Fitness</button>
+                    </div>
+
+                    <!-- Date & Sorting -->
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <input type="date" id="dateFilter" onchange="applyFilters()" class="border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-sasaRed">
+                        <select id="sortBy" onchange="applyFilters()" class="border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-sasaRed">
+                            <option value="featured">Sort by: Featured</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Grid -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-sasaDark flex items-center gap-2">
+                        <span class="w-2.5 h-6 bg-sasaRed rounded-full inline-block"></span>
+                        Trending Upcoming Events
+                    </h2>
+                    <span id="eventCount" class="text-xs font-semibold text-gray-500">Showing 4 Events</span>
+                </div>
+
+                <div id="eventsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- JavaScript dynamic event cards render here -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: ORGANIZER & ADMIN DASHBOARD        -->
+        <!-- ========================================== -->
+        <section id="view-dashboard" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-5">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-sasaDark">Organizer Portal & Financial Dashboard</h1>
+                    <p class="text-xs text-gray-500">Real-time revenue tracking, ticket performance metrics, and gate operations.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="toggleModal('createEventModal')" class="bg-sasaRed hover:bg-sasaRedHover text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Create New Event
+                    </button>
+                    <button onclick="exportReport()" class="bg-sasaDark hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Export Analytics
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analytics Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Gross Revenue</p>
+                        <h3 id="dashGrossRevenue" class="text-2xl font-black text-sasaDark mt-1">KES 0</h3>
+                        <span class="text-[10px] text-emerald-600 font-bold"><i class="fa-solid fa-arrow-trend-up"></i> Live via M-Pesa Daraja</span>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Tickets Sold</p>
+                        <h3 id="dashTicketsSold" class="text-2xl font-black text-sasaDark mt-1">0</h3>
+                        <span class="text-[10px] text-blue-600 font-bold"><i class="fa-solid fa-circle-check"></i> Across 4 active events</span>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-ticket"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Gate Check-in Rate</p>
+                        <h3 id="dashGateCheckins" class="text-2xl font-black text-sasaDark mt-1">0</h3>
+                        <span class="text-[10px] text-purple-600 font-bold"><i class="fa-solid fa-qrcode"></i> Scanned at entry</span>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-expand"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Events</p>
+                        <h3 class="text-2xl font-black text-sasaDark mt-1">4</h3>
+                        <span class="text-[10px] text-gray-500 font-bold">Nairobi & Coastal Hubs</span>
+                    </div>
+                    <div class="w-12 h-12 bg-red-50 text-sasaRed rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Revenue Chart -->
+                <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 class="text-sm font-bold text-sasaDark mb-4">Ticket Revenue Breakdown (KES)</h3>
+                    <div class="h-64">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Ticket Tiers Distribution -->
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 class="text-sm font-bold text-sasaDark mb-4">Sales Distribution by Tier</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="tierChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Sales & Gate Log Table -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-sasaDark">Recent Verified Ticket Transactions & Gate Status</h3>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full">Live Feed</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-50 text-gray-500 font-bold border-b border-gray-100">
+                            <tr>
+                                <th class="p-4">Ticket UUID</th>
+                                <th class="p-4">Customer Name</th>
+                                <th class="p-4">Event</th>
+                                <th class="p-4">Tier</th>
+                                <th class="p-4">M-Pesa Ref</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Check-in Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTransactionsTable" class="divide-y divide-gray-100 text-gray-700">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: GATE SCANNER / QR VERIFIER         -->
+        <!-- ========================================== -->
+        <section id="view-scanner" class="hidden max-w-3xl mx-auto px-4 py-8">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+                <div class="bg-sasaDark text-white p-6 text-center">
+                    <span class="bg-sasaRed text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Gatekeeper Mobile Tool</span>
+                    <h2 class="text-2xl font-extrabold">QR Code Ticket Verifier</h2>
+                    <p class="text-xs text-gray-400 mt-1">Scan or manually enter ticket tokens to authorize entry.</p>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <!-- Simulated Live Camera Viewfinder -->
+                    <div class="relative bg-black rounded-xl h-64 overflow-hidden border-2 border-dashed border-sasaRed flex flex-col items-center justify-center text-center text-white">
+                        <div id="scannerLine" class="absolute w-full h-1 bg-sasaRed shadow-[0_0_15px_#D9232D] top-0 animate-pulse"></div>
+                        <i class="fa-solid fa-camera-retro text-4xl text-gray-500 mb-2"></i>
+                        <p class="text-xs font-semibold text-gray-300">Point Camera at Ticket QR Code</p>
+                        <p class="text-[10px] text-gray-500 mt-1">Simulated camera active. Enter ticket code manually below for instant verification test.</p>
+                    </div>
+
+                    <!-- Manual UUID Input Form -->
+                    <form onsubmit="handleManualVerify(event)" class="space-y-3">
+                        <label class="block text-xs font-bold text-gray-700">Ticket UUID / Token Input</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="manualTicketUuid" placeholder="e.g. TICKET-9821-4402" required 
+                                class="flex-grow border border-gray-300 rounded-lg px-4 py-2.5 text-sm uppercase font-mono focus:outline-none focus:ring-2 focus:ring-sasaRed">
+                            <button type="submit" class="bg-sasaRed hover:bg-sasaRedHover text-white px-6 py-2.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-shield-halved"></i> Verify Ticket
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Scanning Result Modal Container -->
+                    <div id="scanResultBox" class="hidden p-4 rounded-xl text-xs space-y-2 border">
+                        <!-- Dynamic verification feedback injected via JS -->
+                    </div>
+
+                    <!-- Rapid Check-in Log History -->
+                    <div class="border-t border-gray-100 pt-4">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Recent Entry Validation Logs</h4>
+                        <div id="recentScansList" class="space-y-2 max-h-48 overflow-y-auto">
+                            <!-- Render logs -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: SYSTEM ARCHITECTURE & INTEGRATION  -->
+        <!-- ========================================== -->
+        <section id="view-architecture" class="hidden max-w-5xl mx-auto px-4 py-8 space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-3 border-b border-gray-100 pb-4">
+                    <div class="w-10 h-10 bg-sasaRed text-white rounded-lg flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-sasaDark">Production System Architecture Guide</h2>
+                        <p class="text-xs text-gray-500">Includes PostgreSQL relational structure and Node.js M-Pesa Daraja Callback integration snippets.</p>
+                    </div>
+                </div>
+
+                <!-- Database Schema -->
+                <div>
+                    <h3 class="text-xs font-bold text-sasaRed uppercase tracking-wider mb-2">1. PostgreSQL Database Schema (`schema.sql`)</h3>
+                    <pre class="bg-gray-900 text-emerald-400 p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed">
+-- PostgreSQL Schema for Ticketsasa Replica Engine
+
+CREATE TABLE events (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    venue VARCHAR(255) NOT NULL,
+    event_date TIMESTAMP NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE ticket_tiers (
+    id SERIAL PRIMARY KEY,
+    event_id INT REFERENCES events(id) ON DELETE CASCADE,
+    tier_name VARCHAR(50) NOT NULL, -- 'Standard', 'VIP', 'VVIP'
+    price_kes DECIMAL(10, 2) NOT NULL,
+    available_qty INT NOT NULL
+);
+
+CREATE TABLE tickets (
+    ticket_uuid VARCHAR(64) PRIMARY KEY,
+    event_id INT REFERENCES events(id),
+    tier_name VARCHAR(50) NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    customer_email VARCHAR(100) NOT NULL,
+    mpesa_receipt VARCHAR(50) UNIQUE,
+    is_checked_in BOOLEAN DEFAULT FALSE,
+    checked_in_at TIMESTAMP NULL,
+    purchase_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+</pre>
+                </div>
+
+                <!-- M-Pesa Node.js Controller Integration -->
+                <div>
+                    <h3 class="text-xs font-bold text-sasaRed uppercase tracking-wider mb-2">2. M-Pesa Daraja STK Push Callback Express Handler (`mpesaController.js`)</h3>
+                    <pre class="bg-gray-900 text-blue-300 p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed">
+// Express JS Handler for M-Pesa STK Push Webhook
+const express = require('express');
+const router = express.Router();
+
+router.post('/api/v1/mpesa/callback', async (req, res) => {
+    try {
+        const callbackData = req.body.Body.stkCallback;
+        
+        if (callbackData.ResultCode === 0) {
+            const meta = callbackData.CallbackMetadata.Item;
+            const mpesaReceipt = meta.find(i => i.Name === 'MpesaReceiptNumber').Value;
+            const phoneNumber = meta.find(i => i.Name === 'PhoneNumber').Value;
+            const amount = meta.find(i => i.Name === 'Amount').Value;
+
+            // 1. Generate unique ticket token
+            const ticketUuid = 'TICKET-' + Math.floor(1000 + Math.random() * 9000) + '-' + Date.now().toString().slice(-4);
+
+            // 2. Insert into Postgres DB
+            await db.query(
+                `INSERT INTO tickets(ticket_uuid, event_id, tier_name, customer_name, customer_phone, customer_email, mpesa_receipt)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [ticketUuid, req.query.eventId, req.query.tier, req.query.name, phoneNumber, req.query.email, mpesaReceipt]
+            );
+
+            // 3. Trigger SMS / Email QR Code Dispatch (Twilio / Sendgrid / Africa's Talking)
+            console.log(`Ticket ${ticketUuid} issued successfully for M-Pesa Ref: ${mpesaReceipt}`);
+        }
+        res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    } catch (err) {
+        console.error('Error processing M-Pesa callback:', err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+</pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-sasaDark text-white pt-10 pb-6 border-t border-gray-800 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-gray-800 text-xs">
+                <div>
+                    <span class="text-xl font-black text-sasaRed tracking-tight flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-ticket rotate-45"></i> ticketsasa
+                    </span>
+                    <p class="text-gray-400 leading-relaxed">East Africa's leading platform for online ticketing, event management, hotel reservations, and travel experiences.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white uppercase tracking-wider mb-3">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-sasaRed transition">Upcoming Concerts</a></li>
+                        <li><a href="#" class="hover:text-sasaRed transition">Kenya Travel Packages</a></li>
+                        <li><a href="#" class="hover:text-sasaRed transition">Sell Tickets With Us</a></li>
+                        <li><a href="#" class="hover:text-sasaRed transition">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white uppercase tracking-wider mb-3">Payment Methods</h4>
+                    <p class="text-gray-400 mb-3">Secured powered M-Pesa Express, Visa, Mastercard, and Bank Wire.</p>
+                    <div class="flex gap-2 text-lg text-gray-300">
+                        <i class="fa-solid fa-mobile-screen text-emerald-400"></i>
+                        <i class="fa-brands fa-cc-visa"></i>
+                        <i class="fa-brands fa-cc-mastercard"></i>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white uppercase tracking-wider mb-3">Customer Support</h4>
+                    <p class="text-gray-400">Nairobi, Kenya</p>
+                    <p class="text-gray-400">Helpline: +254 (0) 700 000 000</p>
+                    <p class="text-gray-400">Email: support@ticketsasa.com</p>
+                </div>
+            </div>
+            <div class="pt-6 text-center text-[11px] text-gray-500">
+                &copy; 2026 Ticketsasa Replica System. All Rights Reserved. Designed for Enterprise Integration.
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL 1: TICKET PURCHASE & MPESA FLOW      -->
+    <!-- ========================================== -->
+    <div id="bookingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl transition-all">
+            <!-- Modal Header -->
+            <div class="bg-sasaDark text-white p-5 flex justify-between items-center">
+                <div>
+                    <h3 id="modalEventTitle" class="text-lg font-bold">Event Title</h3>
+                    <p id="modalEventVenue" class="text-xs text-gray-400">Venue info</p>
+                </div>
+                <button onclick="toggleModal('bookingModal')" class="text-gray-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <!-- Ticket Tier Selection -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Select Ticket Tier</label>
+                    <div id="tierOptions" class="space-y-2">
+                        <!-- Dynamic Tier Radios -->
+                    </div>
+                </div>
+
+                <!-- Ticket Quantity -->
+                <div class="flex items-center justify-between border-t border-b border-gray-100 py-3">
+                    <span class="text-xs font-bold text-gray-700">Quantity</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="adjustQty(-1)" class="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 font-bold hover:bg-gray-200">-</button>
+                        <span id="ticketQty" class="text-sm font-bold text-sasaDark">1</span>
+                        <button onclick="adjustQty(1)" class="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 font-bold hover:bg-gray-200">+</button>
+                    </div>
+                </div>
+
+                <!-- Customer Info Form -->
+                <form id="purchaseForm" onsubmit="processMpesaPayment(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Full Name</label>
+                        <input type="text" id="custName" required placeholder="John Doe" 
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-sasaRed focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">M-Pesa Phone Number</label>
+                            <input type="tel" id="custPhone" required placeholder="0712345678" pattern="^(07|01|254)\d{8}$"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-sasaRed focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Email Address</label>
+                            <input type="email" id="custEmail" required placeholder="john@example.com" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-sasaRed focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- M-Pesa STK Push Info Box -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-3">
+                        <i class="fa-solid fa-mobile-screen-button text-emerald-600 text-lg mt-0.5"></i>
+                        <div class="text-[11px] text-emerald-800">
+                            <p class="font-bold">M-Pesa Express Payment</p>
+                            <p class="text-emerald-700">An STK prompt will be triggered to your mobile handset. Enter PIN to complete purchase.</p>
+                        </div>
+                    </div>
+
+                    <!-- Total Payable -->
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-xs font-bold text-gray-500">Total Payable:</span>
+                        <span id="totalAmountText" class="text-xl font-black text-sasaRed">KES 0</span>
+                    </div>
+
+                    <button type="submit" id="payButton" class="w-full bg-sasaRed hover:bg-sasaRedHover text-white py-3 rounded-xl font-bold text-xs shadow-lg transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lock"></i> Pay via M-Pesa Express
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL 2: DIGITAL TICKET & QR DISPATCH     -->
+    <!-- ========================================== -->
+    <div id="ticketPassModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative border border-gray-100">
+            
+            <button onclick="toggleModal('ticketPassModal')" class="absolute top-3 right-3 text-white hover:text-gray-200 text-xl z-20 no-print">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+
+            <!-- Printable Ticket Header -->
+            <div class="bg-sasaRed text-white p-6 text-center relative">
+                <span class="text-xs font-bold tracking-widest uppercase opacity-90">Official Entry Pass</span>
+                <h2 id="passEventTitle" class="text-xl font-black mt-1">Sol Fest Kenya</h2>
+                <p id="passEventDate" class="text-xs opacity-90 mt-1"><i class="fa-regular fa-calendar"></i> Dec 18, 2026</p>
+            </div>
+
+            <!-- Cutout Line -->
+            <div class="ticket-cutout-left ticket-cutout-right bg-sasaRed h-4 border-b border-dashed border-white/40"></div>
+
+            <!-- Main Body -->
+            <div class="p-6 space-y-5 text-center bg-white">
+                
+                <!-- QR Code Container -->
+                <div class="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div id="qrcode" class="mb-2"></div>
+                    <span id="passUuid" class="text-[11px] font-mono font-bold text-gray-600 tracking-wider">TICKET-0000-0000</span>
+                </div>
+
+                <!-- Pass Metadata Grid -->
+                <div class="grid grid-cols-2 gap-3 text-left border-t border-b border-gray-100 py-3 text-xs">
+                    <div>
+                        <span class="text-gray-400 font-bold block text-[10px] uppercase">Attendee</span>
+                        <span id="passName" class="font-bold text-sasaDark">John Doe</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold block text-[10px] uppercase">Ticket Tier</span>
+                        <span id="passTier" class="font-bold text-sasaRed">VIP Pass</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold block text-[10px] uppercase">Venue</span>
+                        <span id="passVenue" class="font-bold text-sasaDark">Uhuru Gardens</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold block text-[10px] uppercase">M-Pesa Ref</span>
+                        <span id="passMpesa" class="font-mono font-bold text-emerald-600">QK89201920</span>
+                    </div>
+                </div>
+
+                <!-- Print & Actions -->
+                <div class="flex gap-2 no-print">
+                    <button onclick="window.print()" class="flex-1 bg-sasaDark hover:bg-gray-800 text-white py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> Print / Save PDF
+                    </button>
+                    <button onclick="switchView('scanner'); toggleModal('ticketPassModal')" class="flex-1 bg-sasaRed hover:bg-sasaRedHover text-white py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-qrcode"></i> Test at Gate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL 3: CREATE NEW EVENT (ORGANIZER)      -->
+    <!-- ========================================== -->
+    <div id="createEventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100 mb-4">
+                <h3 class="font-extrabold text-sasaDark text-base">Create New Event</h3>
+                <button onclick="toggleModal('createEventModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleCreateEvent(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Event Title</label>
+                    <input type="text" id="newEventTitle" required placeholder="e.g. Blankets & Wine Nairobi" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Category</label>
+                    <select id="newEventCat" class="w-full border rounded-lg px-3 py-2">
+                        <option value="Music">Music & Concerts</option>
+                        <option value="Nightlife">Nightlife</option>
+                        <option value="Theatre">Arts & Theatre</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Venue</label>
+                        <input type="text" id="newEventVenue" required placeholder="Carnivore Grounds" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Date</label>
+                        <input type="date" id="newEventDate" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Standard Ticket Price (KES)</label>
+                    <input type="number" id="newEventPrice" required placeholder="2500" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1">Artwork URL</label>
+                    <input type="url" id="newEventImg" required placeholder="https://images.unsplash.com/..." class="w-full border rounded-lg px-3 py-2">
+                </div>
+
+                <button type="submit" class="w-full bg-sasaRed text-white py-2.5 rounded-xl font-bold mt-4 hover:bg-sasaRedHover transition">
+                    Publish Event
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Application Logic -->
+    <script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+</body>
+</html>
