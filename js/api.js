@@ -7,7 +7,7 @@
    ========================================================================== */
 
 // Change this to your deployed API URL in production, e.g. "https://api.yourdomain.com/api"
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "https://ticketsasa-backend-1.onrender.com/api";
 
 // Drop the demo data from app.js - the real data now comes from the server.
 events = [];
