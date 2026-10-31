@@ -585,17 +585,32 @@ router.post('/api/v1/mpesa/callback', async (req, res) => {
                 </div>
 
                 <!-- Print & Actions -->
-                <div class="flex gap-2 no-print">
-                    <button onclick="window.print()" class="flex-1 bg-sasaDark hover:bg-gray-800 text-white py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-print"></i> Print / Save PDF
-                    </button>
-                    <button onclick="switchView('scanner'); toggleModal('ticketPassModal')" class="flex-1 bg-sasaRed hover:bg-sasaRedHover text-white py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-qrcode"></i> Test at Gate
-                    </button>
-                </div>
-            </div>
-        </div>
+               <!-- Ticket Download and Actions -->
+<div class="space-y-2 no-print">
+
+    <a id="ticketDownloadButton"
+       href="#"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-file-pdf"></i>
+        Download All Tickets (PDF)
+    </a>
+
+    <div class="flex gap-2">
+        <button onclick="window.print()"
+                class="flex-1 bg-sasaDark hover:bg-gray-800 text-white py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-print"></i>
+            Print Ticket
+        </button>
+
+        <button onclick="switchView('scanner'); toggleModal('ticketPassModal')"
+                class="flex-1 bg-sasaRed hover:bg-sasaRedHover text-white py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-qrcode"></i>
+            Test at Gate
+        </button>
     </div>
+</div>
 
 
     <!-- ========================================== -->

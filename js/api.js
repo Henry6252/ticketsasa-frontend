@@ -132,12 +132,28 @@ function mapTicket(t) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Asks the server every 3s whether the payment is confirmed (max ~2 minutes).
+// Checks payment status every 3 seconds (maximum 2 minutes).
 async function pollOrder(orderId, attempts = 40) {
+    const token = sessionStorage.getItem(`ts_order_token_${orderId}`);
+
+    if (!token) {
+        throw new Error(
+            "Your secure order token is missing. Please contact support with your order reference."
+        );
+    }
+
     for (let i = 0; i < attempts; i++) {
-        const order = await apiFetch(`/orders/${orderId}/`);
-        if (order.status !== "PENDING") return order;
+        const order = await apiFetch(
+            `/orders/${orderId}/?token=${encodeURIComponent(token)}`
+        );
+
+        if (order.status !== "PENDING") {
+            return order;
+        }
+
         await sleep(3000);
     }
+
     return { status: "PENDING" };
 }
 
@@ -155,16 +171,21 @@ async function processMpesaPayment(e) {
     btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Creating your order...`;
 
     try {
-        const order = await apiFetch("/orders/", {
-            method: "POST",
-            body: {
-                tier_id: selectedTierObj.id,
-                quantity: currentQty,
-                name: document.getElementById("custName").value.trim(),
-                phone: document.getElementById("custPhone").value.trim(),
-                email: document.getElementById("custEmail").value.trim()
-            }
-        });
+       const order = await apiFetch("/orders/", {
+    method: "POST",
+    body: {
+        tier_id: selectedTierObj.id,
+        quantity: currentQty,
+        name: document.getElementById("custName").value.trim(),
+        phone: document.getElementById("custPhone").value.trim(),
+        email: document.getElementById("custEmail").value.trim()
+    }
+});
+
+sessionStorage.setItem(
+    `ts_order_token_${order.order_id}`,
+    order.download_token
+);
         btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Redirecting to Pesapal...`;
         window.location.href = order.redirect_url;   // leaves the site; Pesapal sends the customer back
     } catch (err) {
@@ -196,10 +217,27 @@ async function handlePesapalReturn() {
         history.replaceState({}, "", window.location.pathname);   // clean the URL
 
         if (result.status === "PAID") {
-            const tickets = result.tickets.map(mapTicket);
-            showTicketPass(tickets[0]);
+
+    const token = sessionStorage.getItem(`ts_order_token_${orderId}`);
+
+    if (!token) {
+        throw new Error("Your secure download token is missing. Please contact support with your order reference.");
+    }
+
+    // Connect the PDF button to the secure Django download endpoint.
+    const downloadButton = document.getElementById("ticketDownloadButton");
+
+    downloadButton.href =
+        `${API_BASE}/orders/${orderId}/tickets/${encodeURIComponent(token)}/`;
+
+    downloadButton.classList.remove("hidden");
+
+    const tickets = result.tickets.map(mapTicket);
+
+    // Display the first ticket while the PDF contains all tickets.
+    showTicketPass(tickets[0]);
             if (tickets.length > 1) {
-                alert(`${tickets.length} tickets were issued. Each has its own QR code - all of them were emailed to you.`);
+                alert(`${tickets.length} tickets have been issued successfully. You can download them directly from this page.`);
             }
             loadEventsFromApi();   // refresh remaining stock
         } else if (result.status === "FAILED") {
@@ -207,7 +245,7 @@ async function handlePesapalReturn() {
         } else if (result.status === "REVIEW") {
             alert("Your payment needs a quick manual check. Please contact support with your payment confirmation.");
         } else {
-            alert("We haven't received confirmation yet. If you were charged, your tickets will be emailed to you shortly.");
+            alert("Payment confirmation is still pending. No tickets have been issued yet. Please check again shortly.");
         }
     } catch (err) {
         banner.remove();
