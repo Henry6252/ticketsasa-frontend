@@ -448,3 +448,143 @@ async function handleCreateEvent(e) {
 function exportReport() {
     alert("Open the Django admin (/admin/) > Tickets, select rows and choose 'Export selected tickets to CSV'.");
 }
+
+/* ------------------------------------------------------------
+   TICKET QR CAMERA SCANNER
+   Uses html5-qrcode and the existing backend verification API.
+------------------------------------------------------------- */
+
+let ticketsasaQrScanner = null;
+let qrScanInProgress = false;
+
+function updateScannerStatus(message) {
+    const status = document.getElementById("scannerStatus");
+    if (status) status.textContent = message;
+}
+
+function updateScannerButtons(running) {
+    const startButton = document.getElementById("startScannerButton");
+    const stopButton = document.getElementById("stopScannerButton");
+
+    if (startButton) {
+        startButton.disabled = running;
+        startButton.classList.toggle("opacity-50", running);
+    }
+
+    if (stopButton) {
+        stopButton.disabled = !running;
+        stopButton.classList.toggle("opacity-50", !running);
+        stopButton.classList.toggle("cursor-not-allowed", !running);
+    }
+}
+
+async function startQrScanner() {
+    if (qrScanInProgress) return;
+
+    if (typeof Html5Qrcode === "undefined") {
+        updateScannerStatus(
+            "QR scanner library unavailable. Check your internet connection and refresh."
+        );
+        return;
+    }
+
+    if (ticketsasaQrScanner) {
+        updateScannerStatus("Scanner is already initialized.");
+        return;
+    }
+
+    const placeholder = document.getElementById("scannerPlaceholder");
+    const overlay = document.getElementById("scannerOverlay");
+
+    try {
+        updateScannerStatus("Requesting camera access...");
+
+        ticketsasaQrScanner = new Html5Qrcode("qrScannerVideo");
+
+        await ticketsasaQrScanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 220, height: 220 },
+                aspectRatio: 1
+            },
+            async (decodedText) => {
+                if (qrScanInProgress) return;
+
+                const code = decodedText.trim().toUpperCase();
+
+                // Only accept the Ticketsasa ticket-code format.
+                if (!/^TICKET-[A-Z0-9]+-[A-Z0-9]+$/.test(code)) {
+                    updateScannerStatus("QR detected, but it is not a valid ticket-code format.");
+                    return;
+                }
+
+                qrScanInProgress = true;
+                updateScannerStatus("Ticket detected. Verifying with server...");
+
+                try {
+                    await stopQrScanner();
+                    await verifyTicketCode(code);
+                } finally {
+                    qrScanInProgress = false;
+                    updateScannerStatus(
+                        "Verification complete. Start the camera to scan the next ticket."
+                    );
+                }
+            },
+            () => {
+                // QR not found in this video frame. Continue scanning.
+            }
+        );
+
+        if (placeholder) placeholder.classList.add("hidden");
+        if (overlay) overlay.classList.remove("hidden");
+
+        updateScannerButtons(true);
+        updateScannerStatus("Camera active. Point it at a ticket QR code.");
+
+    } catch (error) {
+        ticketsasaQrScanner = null;
+
+        if (placeholder) placeholder.classList.remove("hidden");
+        if (overlay) overlay.classList.add("hidden");
+
+        updateScannerButtons(false);
+
+        updateScannerStatus(
+            error.message || "Could not start camera. Check camera permissions and HTTPS."
+        );
+
+        console.error("QR scanner error:", error);
+    }
+}
+
+async function stopQrScanner() {
+    if (!ticketsasaQrScanner) return;
+
+    const scanner = ticketsasaQrScanner;
+
+    try {
+        if (scanner.isScanning) {
+            await scanner.stop();
+        }
+    } catch (error) {
+        console.warn("Could not stop QR scanner cleanly:", error);
+    }
+
+    try {
+        scanner.clear();
+    } catch (error) {
+        console.warn("Could not clear QR scanner:", error);
+    }
+
+    ticketsasaQrScanner = null;
+
+    const placeholder = document.getElementById("scannerPlaceholder");
+    const overlay = document.getElementById("scannerOverlay");
+
+    if (placeholder) placeholder.classList.remove("hidden");
+    if (overlay) overlay.classList.add("hidden");
+
+    updateScannerButtons(false);
+}
