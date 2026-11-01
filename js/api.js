@@ -78,19 +78,93 @@ function mapEvent(e) {
     };
 }
 
-async function loadEventsFromApi() {
+/* ---------------------------------------------------------- event caching */
+
+const EVENT_CACHE_KEY = "ticketsasa_public_events";
+const EVENT_CACHE_DURATION = 30 * 1000; // 30 seconds
+
+let eventsRequest = null;
+
+async function loadEventsFromApi(forceRefresh = false) {
     const grid = document.getElementById("eventsGrid");
-    grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">Loading events...</div>`;
-    try {
-        const data = await apiFetch("/events/");
-        events = data.map(mapEvent);
-        renderEventsGrid(events);
-        const featuredIdx = events.findIndex(e => e.featured);
-        heroIndex = featuredIdx >= 0 ? featuredIdx : 0;
-        updateHero();
-    } catch (err) {
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-red-500">${esc(err.message)}</div>`;
+
+    if (!grid) return;
+
+    // Reuse an active request instead of sending duplicate requests.
+    if (eventsRequest && !forceRefresh) {
+        return eventsRequest;
     }
+
+    // Display cached events immediately when they are still fresh.
+    if (!forceRefresh) {
+        try {
+            const cached = sessionStorage.getItem(EVENT_CACHE_KEY);
+
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                const cacheIsFresh =
+                    Date.now() - parsed.timestamp < EVENT_CACHE_DURATION;
+
+                if (cacheIsFresh && Array.isArray(parsed.data)) {
+                    events = parsed.data.map(mapEvent);
+                    renderEventsGrid(events);
+
+                    const featuredIdx = events.findIndex(e => e.featured);
+                    heroIndex = featuredIdx >= 0 ? featuredIdx : 0;
+                    updateHero();
+
+                    return;
+                }
+            }
+        } catch (error) {
+            sessionStorage.removeItem(EVENT_CACHE_KEY);
+        }
+    }
+
+    if (!events.length) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-12 text-gray-400">
+                Loading events...
+            </div>
+        `;
+    }
+
+    eventsRequest = (async () => {
+        try {
+            const data = await apiFetch("/events/");
+
+            if (!Array.isArray(data)) {
+                throw new Error("The server returned an unexpected events response.");
+            }
+
+            events = data.map(mapEvent);
+
+            sessionStorage.setItem(
+                EVENT_CACHE_KEY,
+                JSON.stringify({
+                    timestamp: Date.now(),
+                    data
+                })
+            );
+
+            renderEventsGrid(events);
+
+            const featuredIdx = events.findIndex(e => e.featured);
+            heroIndex = featuredIdx >= 0 ? featuredIdx : 0;
+            updateHero();
+
+        } catch (err) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-12 text-red-500">
+                    ${esc(err.message)}
+                </div>
+            `;
+        } finally {
+            eventsRequest = null;
+        }
+    })();
+
+    return eventsRequest;
 }
 
 // Hero banner now follows real events (title, image, date, venue, price, button).
@@ -239,7 +313,7 @@ async function handlePesapalReturn() {
             if (tickets.length > 1) {
                 alert(`${tickets.length} tickets have been issued successfully. You can download them directly from this page.`);
             }
-            loadEventsFromApi();   // refresh remaining stock
+            loadEventsFromApi(true);  // refresh remaining stock
         } else if (result.status === "FAILED") {
             alert("The payment didn't go through or was cancelled. No tickets were issued - please try again.");
         } else if (result.status === "REVIEW") {
@@ -436,7 +510,7 @@ async function handleCreateEvent(e) {
         });
         toggleModal("createEventModal");
         form.reset();
-        await loadEventsFromApi();
+        await loadEventsFromApi(true);
         loadDashboardStats();
         alert("New event published successfully to public storefront!");
     } catch (err) {
